@@ -1,11 +1,12 @@
 import React from "react";
-import ThemedButton from "./Component3";
+import ThemedPaper from "./Component3";
 
 
 export default function Content() {
+
     return (
         <div>
-            <ThemedButton />
+            <ThemedPaper/>
         </div>
     );
 }
