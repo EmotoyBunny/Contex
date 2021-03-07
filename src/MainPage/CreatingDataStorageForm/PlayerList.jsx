@@ -51,6 +51,8 @@ class PlayerList extends Component {
      */
     ChooseGameLog = (props) => {
         switch (props) {
+            case "":
+                return "";
             case "Call of Duty: Warzone":
                 return "call_of_duty";
             case "Counter-Strike: Global Offensive":

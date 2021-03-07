@@ -1,7 +1,7 @@
 export default function chooseGameName(props){
     switch(props) {
         case "":
-            return "Пока что нет игры"
+            return ""
         case "call_of_duty":
             return "Call of Duty: Warzone";
         case 'cs_go':
