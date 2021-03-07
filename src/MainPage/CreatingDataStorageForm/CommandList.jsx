@@ -100,10 +100,14 @@ class CommandList extends Component {
 
     }
 
+    close = () => {
+        this.setState({edit: false})
+    }
+
     edit1 = () => {
         if (this.state.edit === true) {
             return (<AddingCommand name={this.props.item.name} game={this.ChooseGameLog(this.props.item.game)} playerList={this.props.item.playerList}
-                                  getData={this.props.getData} what="edit"/>)
+                                  getData={this.props.getData} close={this.close} what="edit"/>)
         }
     }
 

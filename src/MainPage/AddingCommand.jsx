@@ -135,6 +135,8 @@ class AddingCommand extends Component {
             this.setState({yes_no: false});
     }
 
+
+
     /**
      * выбор кнопки для редактирования/добавления
      * @returns {JSX.Element}
@@ -155,11 +157,9 @@ class AddingCommand extends Component {
                         </Button>
                     </div>
                     <div className="button">
-                        <Link to="/playerList">
-                            <Button variant="contained" color="default" size="large">
+                            <Button onClick={() => this.props.close()} variant="contained" color="default" size="large">
                                 Закрыть
                             </Button>
-                        </Link>
                     </div>
                 </div>
             )
