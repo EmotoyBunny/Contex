@@ -141,7 +141,7 @@ class PlayerList extends Component {
                                 className="inline"
                                 color="textPrimary"
                             >
-                                {this.props.item.team}
+                                {" - "+this.props.item.team}
                             </Typography>
                         </React.Fragment>
                     }
