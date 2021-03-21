@@ -5,13 +5,17 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import Button from '@material-ui/core/Button';
+import LoupeIcon from '@material-ui/icons/Loupe';
+import Chip from '@material-ui/core/Chip';
+import FaceIcon from '@material-ui/icons/Face';
+import IconButton from "@material-ui/core/IconButton";
 
 // css table
 import "./CssMainPage/AddingComponent.css"
 
 // jsx components
 import PassageLocal from "./CreatingDataStorageForm/PassageLocal";
-import Typography from "@material-ui/core/Typography";
+import Tooltip from "@material-ui/core/Tooltip";
 
 class AddingCommand extends Component {
     constructor(props) {
@@ -19,7 +23,7 @@ class AddingCommand extends Component {
         this.state = {
             name: "",
             game: "",
-            playerList: "",
+            playerList: [],
             correctName: false,
             correctPlayerList: false,
             correctGame: false,
@@ -27,6 +31,9 @@ class AddingCommand extends Component {
             key: "",
             count: 0,
             array: [],
+            arrayTeam: [],
+            players: "",
+            correctButton: true
         };
     }
 
@@ -34,6 +41,7 @@ class AddingCommand extends Component {
     handleChange = (event) => {
         const {name, value} = event.target;
         this.setState({[name]: value});
+
     };
 
     /**
@@ -46,57 +54,32 @@ class AddingCommand extends Component {
             this.setState({correctName: true})
             if (this.state.game === "")
                 this.setState({correctGame: true})
-        }
-        else {
+        } else {
             if (this.state.game === "")
                 this.setState({correctGame: true})
-            else
-            {
+            else {
                 this.setState({correctGame: false})
                 this.setState({correctName: false})
-                let array = this.state.playerList.split(' ');
-                let players = PassageLocal("player");
-                let j = 0;
                 let i = 0;
-                let array1 = [];
-                while (i < players.length) {
-                    while (j < array.length) {
-                        if (players[i].name === array[j]) {
-                            let object = {
-                                name: players[i].name,
-                                game: players[i].game,
-                                team: this.state.name,
-                                fullName: players[i].fullName,
-                                who: "player",
-                            }
-                            localStorage.setItem(players[i].name, JSON.stringify(object))
-                        }
-                        let object1 = {id: j, player: array[j]};
-                        array1.push(object1);
-                        j++;
+                while (i < this.state.playerList.length) {
+                    let players = JSON.parse(localStorage.getItem(this.state.playerList[i]));
+                    let object = {
+                        name: players.name,
+                        fullName: players.fullName,
+                        game: players.game,
+                        team: this.state.name,
+                        who: "player",
                     }
+                    localStorage.setItem(object.name, JSON.stringify(object))
                     i++;
                 }
                 const command = {
                     name: this.state.name,
                     game: this.state.game,
-                    playerList: array1,
+                    playerList: this.state.playerList,
                     who: this.state.who
                 };
-                let commandList = JSON.stringify(command);
-                localStorage.setItem(this.state.name, commandList);
-                this.setState({
-                    name: "",
-                    game: "",
-                    playerList: "",
-                    correctName: false,
-                    correctPlayerList: false,
-                    correctGame: false,
-                    who: "command",
-                    key: "",
-                    count: 0,
-                    array: [],
-                })
+                localStorage.setItem(this.state.name, JSON.stringify(command));
             }
         }
     };
@@ -104,38 +87,32 @@ class AddingCommand extends Component {
 
     componentDidMount() {
         if (this.props.what === "edit") {
-            let array = [];
-            for (let i = 0; i < this.props.playerList.length; i++) {
-                array.push(this.props.playerList[i].player)
-            }
             this.setState({key: this.props.name}, () => {
                 this.setState({
                     name: this.props.name,
                     game: this.props.game,
-                    playerList: array.join(),
+                    playerList: this.props.playerList,
                 });
             });
         }
-        this.update();
+        this.setState({arrayTeam: PassageLocal("player")});
     }
 
     /**
-     * Метод редактирования данных, где ввиде props.getData() принимается метод для обновления состояния
+     * Метод редактирования данных
      */
     edit = () => {
         localStorage.removeItem(this.state.key);
         this.addItem();
-        this.props.getData();
     }
 
-    update = () => {
-        if (this.state.name !== "1") {
-            this.setState({yes_no: true});
-        } else
-            this.setState({yes_no: false});
+    playerList = () => {
+        return this.state.arrayTeam.map((item) => {
+            if (this.state.playerList.includes(item.name) === false && JSON.parse(localStorage.getItem(item.name)).team === "")
+                return (<option key={item.id} value={item.name}>{item.name}</option>);
+            return null;
+        });
     }
-
-
 
     /**
      * выбор кнопки для редактирования/добавления
@@ -144,26 +121,62 @@ class AddingCommand extends Component {
     chooseButton = () => {
         if (this.props.what === "create")
             return (
-                <Button variant="contained" color="default" size="large" onClick={this.addItem}>
-                    Добавить
-                </Button>
+                <Link to="/commandList">
+                    <Button variant="contained" color="default" size="large" onClick={this.addItem}>
+                        Добавить
+                    </Button>
+                </Link>
             )
         else
             return (
-                <div className="doubleBlockButton">
+                <Link to="/commandList">
                     <div className="button">
                         <Button variant="contained" color="default" size="large" onClick={this.edit}>
                             Изменить
                         </Button>
                     </div>
-                    <div className="button">
-                            <Button onClick={() => this.props.close()} variant="contained" color="default" size="large">
-                                Закрыть
-                            </Button>
-                    </div>
-                </div>
+                </Link>
             )
     }
+
+    addingPlayer = () => {
+        if (this.state.players !== "") {
+            const array = this.state.playerList;
+            array.push(this.state.players)
+            this.setState({playerList: array, players: ""});
+        }
+    }
+
+    handleDelete = (del) => {
+        const array = this.state.playerList.filter(item => item !== del)
+        this.setState({playerList: array});
+        let players = JSON.parse(localStorage.getItem(del));
+        let object = {
+            name: players.name,
+            fullName: players.fullName,
+            game: players.game,
+            team: "",
+            who: "player",
+        }
+        localStorage.setItem(object.name, JSON.stringify(object))
+    }
+
+
+    outPutPlayer = () => {
+        const array = this.state.playerList;
+        const listItems = array.map((items, index) =>
+            <div key={index} className="blockName">
+                <Chip
+                    icon={<FaceIcon/>}
+                    label={items}
+                    onDelete={() => this.handleDelete(items)}
+                    color="primary"
+                    variant="outlined"
+                />
+            </div>
+        );
+        return (<div className="blockName">{listItems}</div>);
+    };
 
 
     render() {
@@ -178,7 +191,8 @@ class AddingCommand extends Component {
                                     error={this.state.correctName}
                                     id="outlined-required"
                                     label="Название Команды"
-                                    variant="outlined"
+                                    variant="filled"
+                                    color="primary"
                                     name="name" value={this.state.name} onChange={this.handleChange}
                                 />
                             </div>
@@ -186,7 +200,7 @@ class AddingCommand extends Component {
                     </div>
                 </div>
                 <div className="blockGame">
-                    <FormControl required variant="outlined">
+                    <FormControl required variant="filled">
                         <InputLabel>Игра</InputLabel>
                         <Select
                             native
@@ -220,22 +234,29 @@ class AddingCommand extends Component {
                         </Select>
                     </FormControl>
                 </div>
-                <div className="blockName">
-                    <Typography color="textPrimary" variant="body3">
-                        Введите, пожайлуста, никнеймы участников вашей команды через пробел.
-                    </Typography>
-                    <div className="blockName">
-                        <Typography color="textPrimary" variant="body3">
-                            Например - iPowerll WolfHeart
-                        </Typography>
-                    </div>
-                    <TextField
-                        error={this.state.correctPlayerList}
-                        id="outlined-required"
-                        label="Участники команды"
-                        variant="outlined"
-                        name="playerList" value={this.state.playerList} onChange={this.handleChange}
-                    />
+                <div className="blockCommand">
+                    <FormControl variant="filled">
+                        <InputLabel>Игроки</InputLabel>
+                        <Select
+                            native
+                            className="select"
+                            value={this.state.players}
+                            onChange={this.handleChange}
+                            label="Игроки"
+                            name='players'
+                        >
+                            <option value={this.state.players}>{this.state.players}</option>
+                            {this.playerList()}
+                        </Select>
+                    </FormControl>
+                    <Tooltip title="Добавить игрока">
+                    <IconButton onClick={() => this.addingPlayer()} aria-label="Добавить">
+                        <LoupeIcon/>
+                    </IconButton>
+                    </Tooltip>
+                </div>
+                <div className="blockCommand">
+                    {this.outPutPlayer()}
                 </div>
                 <div className="blockButton">
                     {this.chooseButton()}

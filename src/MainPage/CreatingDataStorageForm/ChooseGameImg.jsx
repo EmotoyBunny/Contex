@@ -18,6 +18,7 @@ import tekken7 from "./LogoGames/tekken7.jpg"
 import valorant from "./LogoGames/valorant.jpg"
 import warface from "./LogoGames/warface.jpg"
 import world_of_tanks from "./LogoGames/world_of_tanks.jpg"
+import missing from "./LogoGames/missing.png"
 
 export default function chooseGame(props) {
     switch(props) {
@@ -61,6 +62,8 @@ export default function chooseGame(props) {
             return warface;
         case 'world_of_tanks':
             return world_of_tanks;
+        case '':
+            return missing;
         default:
     }
 }

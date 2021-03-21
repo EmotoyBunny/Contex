@@ -1,5 +1,5 @@
 .blockAll{
-    padding-top: 4%;
+    padding-top: 80px;
     padding-bottom: 15%;
 }
 
@@ -44,4 +44,9 @@
 
 .select{
     min-width: 200px;
+}
+
+.blockTourney{
+    padding-top: 100px;
+    padding-bottom: 15%;
 }

@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import {Link} from "react-router-dom";
 import TextField from '@material-ui/core/TextField';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
@@ -19,12 +20,13 @@ class AddingPlayer extends Component {
             name: "",
             game: "",
             team: "",
-            correctName: false,
-            correctFullName: false,
+            correctName: "false",
             fullName: "",
             who: "player",
             arrayTeam: [],
-            key: ""
+            keyFoName: "",
+            keyForTeam: "",
+            correctButton: true
         };
     }
 
@@ -35,12 +37,11 @@ class AddingPlayer extends Component {
 
 
     addItem = () => {
-        if (this.state.name === "")
-            this.setState({correctName: true})
-        else
-            this.setState({correctName: false})
-
-        if (this.state.correctName === false && this.state.correctFullName === false) {
+        if (this.state.name === "" || this.state.name.length < 15 || this.state.name.length <= 3) {
+            this.setState({correctName: "true"})
+        } else
+            this.setState({correctName: "false"})
+        if (this.state.correctName === "false") {
             const player = {
                 name: this.state.name,
                 fullName: this.state.fullName,
@@ -50,28 +51,23 @@ class AddingPlayer extends Component {
             }
             localStorage.setItem(this.state.name, JSON.stringify(player));
             if (this.state.team !== "") {
-                let array = JSON.parse(localStorage.getItem(this.state.team));
-                array.playerList.push({id: array.playerList.length - 1, player: this.state.name});
-                localStorage.setItem(this.state.team, JSON.stringify(array));
+                let object = JSON.parse(localStorage.getItem(this.state.team));
+                object.playerList.push(this.state.name);
+                const command = {
+                    name: object.name,
+                    game: object.game,
+                    playerList: object.playerList,
+                    who: "command"
+                };
+                localStorage.setItem(object.name, JSON.stringify(command));
             }
         }
-        this.setState({
-            name: "",
-            game: "",
-            team: "",
-            correctName: false,
-            correctFullName: false,
-            fullName: "",
-            who: "player",
-            arrayTeam: [],
-            key: ""
-        })
     };
 
 
     componentDidMount() {
         if (this.props.what === "edit") {
-            this.setState({key: this.props.name}, () => {
+            this.setState({keyForName: this.props.name, keyForTeam: this.props.team}, () => {
                 this.setState({
                     name: this.props.name,
                     game: this.props.game,
@@ -80,35 +76,38 @@ class AddingPlayer extends Component {
                 });
             });
         }
-        this.update();
-    }
-
-
-    update = () => {
-        if (this.state.name !== "1") {
-            this.setState({yes_no: true});
-        } else
-            this.setState({yes_no: false});
         this.setState({arrayTeam: PassageLocal("command")});
     }
+
 
     /**
      * Составление списка команд
      * @returns список команд
      */
     commandList = () => {
-        return this.state.arrayTeam.map((item) =>
-            <option key={item.id} value={item.name}>{item.name}</option>
-        );
+        return this.state.arrayTeam.map((item) => {
+            if (JSON.parse(localStorage.getItem(item.name)).playerList.includes(this.state.name) === false)
+                return (<option key={item.id} value={item.name}>{item.name}</option>);
+            return null;
+        });
     }
 
     /**
-     *Метод редактирования данных, где ввиде props.getData() принимается метод для обновления состояния
+     *Метод редактирования данных
      */
     edit = () => {
         localStorage.removeItem(this.state.key);
+        if (this.state.team !== this.state.keyForTeam) {
+            let object = JSON.parse(localStorage.getItem(this.state.team));
+            const command = {
+                name: object.name,
+                game: object.game,
+                playerList: object.playerList.filter(item => item !== this.state.name),
+                who: "command"
+            };
+            localStorage.setItem(object.name, JSON.stringify(command));
+        }
         this.addItem();
-        this.props.getData();
     }
 
 
@@ -119,24 +118,20 @@ class AddingPlayer extends Component {
     chooseButton = () => {
         if (this.props.what === "create")
             return (
-                <Button variant="contained" color="default" size="large" onClick={this.addItem}>
-                    Добавить
-                </Button>
+                <Link to="/playerList">
+                    <Button variant="contained" color="default" size="large"
+                            onClick={this.addItem}>
+                        Добавить
+                    </Button>
+                </Link>
             )
         else
             return (
-                <div className="doubleBlockButton">
-                    <div className="button">
-                        <Button variant="contained" color="default" size="large" onClick={this.edit}>
-                            Изменить
-                        </Button>
-                    </div>
-                    <div className="button">
-                        <Button onClick={() => this.props.close()} variant="contained" color="default" size="large">
-                            Закрыть
-                        </Button>
-                    </div>
-                </div>
+                <Link to="/playerList">
+                    <Button variant="contained" color="default" size="large" onClick={this.edit}>
+                        Изменить
+                    </Button>
+                </Link>
             )
     }
 
@@ -150,10 +145,8 @@ class AddingPlayer extends Component {
                             <div>
                                 <TextField
                                     required
-                                    error={this.state.correctName}
-                                    id="outlined-required"
                                     label="Ваш никнейм"
-                                    variant="outlined"
+                                    variant="filled"
                                     name="name" value={this.state.name} onChange={this.handleChange}
                                 />
                             </div>
@@ -165,10 +158,8 @@ class AddingPlayer extends Component {
                         <form noValidate autoComplete="off">
                             <div>
                                 <TextField
-                                    error={this.state.correctFullName}
-                                    id="outlined-required"
                                     label="Ваше ФИО"
-                                    variant="outlined"
+                                    variant="filled"
                                     name="fullName" value={this.state.fullName} onChange={this.handleChange}
                                 />
                             </div>
@@ -176,7 +167,7 @@ class AddingPlayer extends Component {
                     </div>
                 </div>
                 <div className="blockGame">
-                    <FormControl variant="outlined">
+                    <FormControl variant="filled">
                         <InputLabel>Игра</InputLabel>
                         <Select
                             native
@@ -210,7 +201,7 @@ class AddingPlayer extends Component {
                     </FormControl>
                 </div>
                 <div className="blockCommand">
-                    <FormControl variant="outlined">
+                    <FormControl variant="filled">
                         <InputLabel>Команда</InputLabel>
                         <Select
                             native

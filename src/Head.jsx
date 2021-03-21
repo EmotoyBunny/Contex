@@ -1,19 +1,15 @@
-import React from "react";
+import React, {Component} from "react";
 import {BrowserRouter as Router, Route, Switch, Link} from 'react-router-dom';
+import {createBrowserHistory} from 'history';
 
 import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import {makeStyles, withStyles} from '@material-ui/core/styles';
-import MenuIcon from '@material-ui/icons/Menu';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import SendIcon from '@material-ui/icons/Send';
 import Container from "@material-ui/core/Container";
-
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import ControlCameraOutlinedIcon from '@material-ui/icons/ControlCameraOutlined';
+import WhatshotOutlinedIcon from '@material-ui/icons/WhatshotOutlined';
+import PeopleAltOutlinedIcon from '@material-ui/icons/PeopleAltOutlined';
+import PersonOutlineOutlinedIcon from '@material-ui/icons/PersonOutlineOutlined';
 
 // css table
 import "./Head.css"
@@ -28,126 +24,89 @@ import ProfilesPlayer from "./MainPage/CreatingDataStorageForm/ProfilePlayer";
 import Tourney from "./MainPage/Tourney";
 
 
-export default function Head() {
-    const useStyles = makeStyles((theme) => ({
-        title: {
-            flexGrow: 20,
-        },
-        root: {
-            maxWidth: "md",
-        },
-    }));
+class Head extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
 
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const open = Boolean(anchorEl);
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const profilesPlayers = PassageLocal("player").map((item,index) => {
+    profilesPlayers = PassageLocal("player").map((item, index) => {
         return (<Route exact path={"/" + item.name} key={index}
                        render={(props) => <ProfilesPlayer {...props} name={item.name} game={item.game} team={item.team}
                                                           link="/playerList" fullName={item.fullName} who="player"/>}/>)
     })
 
-    const profilesCommands = PassageLocal("command").map((item,index) => {
+    profilesCommands = PassageLocal("command").map((item, index) => {
         return (<Route exact path={"/" + item.name} key={index}
-                       render={(props) => <ProfilesPlayer {...props} name={item.name} game={item.game} playerList={item.playerList}
-                                                          link="/" who="command"/>}/>)
+                       render={(props) => <ProfilesPlayer {...props} name={item.name} game={item.game}
+                                                          playerList={item.playerList}
+                                                          link="/commandList" who="command"/>}/>)
+    })
+
+    editProfileCommands = PassageLocal("command").map((item, index) => {
+        return (<Route exact path={"/edit/" + item.name} key={index}
+                       render={(props) => <AddingCommand {...props} name={item.name} game={item.game}
+                                                         playerList={item.playerList}
+                                                         what="edit"/>}/>)
     })
 
 
-    const StyledMenuItem = withStyles((theme) => ({
-        root: {
-            '&:focus': {
-                backgroundColor: theme.palette.primary.main,
-                '& .MuiListItemIcon-root, & .MuiListItemText-primary': {
-                    color: theme.palette.common.white,
-                },
-            },
-        },
-    }))(MenuItem);
+    editProfilePlayers = PassageLocal("player").map((item, index) => {
+        return (<Route exact path={"/edit/" + item.name} key={index}
+                       render={(props) => <AddingPlayer {...props} name={item.name} game={item.game} team={item.team}
+                                                        fullName={item.fullName}
+                                                        what="edit"/>}/>)
+    })
 
-    const classes = useStyles();
+    render() {
+        const customHistory = createBrowserHistory();
+        return (
+            <Router history={customHistory}>
+                <div className="container">
+                    <Container maxWidth='md'>
+                        <div className="container1">
+                            <AppBar position="fixed">
+                                <Tabs
+                                    aria-label="disabled tabs example"
+                                    centered
+                                >
+                                    <Link to="/">
+                                        <Tab label="Главная" icon={<ControlCameraOutlinedIcon/>}/>
+                                    </Link>
+                                    <Link to="/commandList">
+                                        <Tab icon={<PeopleAltOutlinedIcon/>} label="Команды"/>
+                                    </Link>
+                                    <Link to="/playerList">
+                                        <Tab icon={<PersonOutlineOutlinedIcon/>} label="Игроки"/>
+                                    </Link>
+                                    <Link to="/tourney">
+                                        <Tab icon={<WhatshotOutlinedIcon/>} label="Турниры"/>
+                                    </Link>
 
-    return (
+                                </Tabs>
+                            </AppBar>
+                            <Switch>
+                                <Route exact path="/" render={(props) => <MainPage {...props} />}/>
+                                <Route exact path="/commandList" render={(props) => <MainPage {...props} />}/>
+                                <Route exact path="/addingCommand"
+                                       render={(props) => <AddingCommand {...props} what="create"/>}/>
+                                <Route exact path="/addingPlayer"
+                                       render={(props) => <AddingPlayer {...props} what="create"/>}/>
+                                {this.profilesPlayers}
+                                {this.profilesCommands}
+                                {this.editProfileCommands}
+                                {this.editProfilePlayers}
+                                <Route exact path="/playerList" render={(props) => <MainPagePlayers {...props}/>}/>
+                                <Route exact path="/tourney" component={Tourney}/>
+                                <Route path="*" component={MainPage}/>
+                            </Switch>
+                        </div>
+                    </Container>
+                </div>
+            </Router>
 
-        <Router>
-            <div className="container">
-                <Container maxWidth='md'>
-                    <div className="container1">
-                        <AppBar position="fixed">
-                            <Toolbar>
-                                <div>
-                                    <MenuIcon
-                                        aria-label="more"
-                                        aria-controls="long-menu"
-                                        aria-haspopup="true"
-                                        onClick={handleClick}
-                                    >
-                                        <MoreVertIcon/>
-                                    </MenuIcon>
-                                    <Menu
-                                        id="long-menu"
-                                        anchorEl={anchorEl}
-                                        keepMounted
-                                        open={open}
-                                        onClose={handleClose}
-                                        onExiting={handleClose}
-                                        onClick={handleClose}
-                                    >
-                                        <Link to="/">
-                                            <StyledMenuItem>
-                                                <ListItemIcon>
-                                                    <SendIcon fontSize="default"/>
-                                                </ListItemIcon>
-                                                <ListItemText primary="Команды"/>
-                                            </StyledMenuItem>
-                                        </Link>
-                                        <Link to="/playerList">
-                                            <StyledMenuItem>
-                                                <ListItemIcon>
-                                                    <SendIcon fontSize="default"/>
-                                                </ListItemIcon>
-                                                <ListItemText primary="Игроки"/>
-                                            </StyledMenuItem>
-                                        </Link>
-                                        <Link to="/tourney">
-                                            <StyledMenuItem>
-                                                <ListItemIcon>
-                                                    <SendIcon fontSize="default"/>
-                                                </ListItemIcon>
-                                                <ListItemText primary="Турниры"/>
-                                            </StyledMenuItem>
-                                        </Link>
-                                    </Menu>
-                                </div>
-                                <Typography variant="h5" align='center' className={classes.title}>
-                                    Команды
-                                </Typography>
-                            </Toolbar>
-                        </AppBar>
-                        <Switch>
-                            <Route exact path="/" component={MainPage}/>
-                            <Route exact path="/adding_command"
-                                   render={(props) => <AddingCommand {...props} what="create"/>}/>
-                            <Route exact path="/adding_player"
-                                   render={(props) => <AddingPlayer {...props} what="create"/>}/>
-                            {profilesPlayers}
-                            {profilesCommands}
-                            <Route exact path="/playerList" component={MainPagePlayers}/>
-                            <Route exact path="/tourney" component={Tourney}/>
-                            <Route path="*" component={MainPage}/>
-                        </Switch>
-                    </div>
-                </Container>
-            </div>
-        </Router>
-
-    );
+        );
+    }
 }
+
+export default Head;
